@@ -33,6 +33,38 @@ async function userRegiseration(req, res) {
   });
 }
 
+async function userLogin(req, res) {
+  const { email, password } = req.body;
+  const user = await userModel.findOne({ email: email }).select("+password");
+
+  if (!user) {
+    return res
+      .status(404)
+      .json({ message: "User not found", status: "failed" });
+  }
+
+  user.comparePassword(password).then((isMatch) => {
+    if (!isMatch) {
+      return res
+        .status(401)
+        .json({ message: "Invalid credentials", status: "failed" });
+    }
+  });
+
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    expiresIn: "3d",
+  });
+  res.cookie("token", token);
+  res.status(201).json({
+    user: {
+      name: user.name,
+      email: user.email,
+      id: user._id,
+    },
+    token,
+  });
+}
 module.exports = {
   userRegiseration,
+  userLogin,
 };
