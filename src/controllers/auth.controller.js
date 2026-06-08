@@ -22,8 +22,15 @@ async function userRegiseration(req, res) {
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: "3d",
   });
-  
-  
+  res.cookie("token", token);
+  res.status(201).json({
+    user: {
+      name: user.name,
+      email: user.email,
+      id: user._id,
+    },
+    token,
+  });
 }
 
 module.exports = {
