@@ -1,5 +1,8 @@
 const userModel = require("../models/user.model.js");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const emailService = require("../services/email.services.js");
+
 // POST : /api/auth/register
 
 async function userRegiseration(req, res) {
@@ -31,6 +34,9 @@ async function userRegiseration(req, res) {
     },
     token,
   });
+
+
+  await emailService.sendRegistrationEmail(user.email, user.name);
 }
 
 async function userLogin(req, res) {
