@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs")
 
-
+// Define the schema for the User collection
 const userSchema = mongoose.Schema(
     {
         email : {
@@ -20,31 +20,35 @@ const userSchema = mongoose.Schema(
             type: String,
             required: [true, "Password is required"],
             minlength: [6, "password should contain more than 6 charaters"],
-            select: false
+            select: false  // exclude password from query results by default
         }
     },{
-        timestamps : true
+        timestamps : true  // automatically adds createdAt and updatedAt fields
     });
 
 
-    userSchema.pre("save", async function () {
-        
-        if(!this.isModified("password")){
-            return
-        }
+// Pre-save hook: runs before every .save() call
+// Hashes the password only if it has been modified (avoids re-hashing on other updates)
+userSchema.pre("save", async function () {
 
-        const hash = await bcrypt.hash(this.password, 10)
-        this.password = hash
+    if(!this.isModified("password")){
         return
-
-    })
-
-
-    userSchema.methods.comparePassword = async function (password){
-        
-        return await bcrypt.compare(password, this.password)
     }
 
+    const hash = await bcrypt.hash(this.password, 10)  // 10 = salt rounds
+    this.password = hash
+    return
+
+})
+
+
+// Instance method: compares a plain-text password against the stored hash
+userSchema.methods.comparePassword = async function (password){
+
+    return await bcrypt.compare(password, this.password)
+}
+
+// Create the model from the schema and export it
 const userModel = mongoose.model("User", userSchema)
 
 module.exports = userModel
