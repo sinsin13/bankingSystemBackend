@@ -1,24 +1,27 @@
 const mongoose = require('mongoose');
+const { captureRejectionSymbol } = require('nodemailer/lib/xoauth2');
 
 const accountSchema = new mongoose.Schema({
-    userId: {
+    user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
+    },
+    status:{
+        enum: ['active', 'forzen','closed']
+    },
+    currency :{
+        type: String,
+        required: true,
+        default: 'INR',
     },
     accountType: {
         type: String,
         enum: ['savings', 'checking'],
         required: true,
-    },
-    balance: {
-        type: Number,   
-        default: 0,
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
+    }
+}, {
+    timestamps: true,
 });
 
 const Account = mongoose.model('Account', accountSchema);
