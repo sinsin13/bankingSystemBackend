@@ -6,9 +6,12 @@ const accountSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
+        index: true,
     },
     status:{
-        enum: ['active', 'forzen','closed']
+        enum: ['active', 'forzen','closed'],
+        type: String,
+        default: 'active',
     },
     currency :{
         type: String,
@@ -24,6 +27,9 @@ const accountSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-const Account = mongoose.model('Account', accountSchema);
+// index to ensure a user cannot have multiple accounts of the same type
+accountSchema.index({ user: 1, accountType: 1 });
 
-module.exports = Account;
+const accountModel = mongoose.model('Account', accountSchema);
+
+module.exports = accountModel;
