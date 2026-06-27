@@ -39,6 +39,9 @@ async function userRegiseration(req, res) {
   await emailService.sendRegistrationEmail(user.email, user.name);
 }
 
+
+
+
 async function userLogin(req, res) {
   const { email, password } = req.body;
   const user = await userModel.findOne({ email: email }).select("+password");
