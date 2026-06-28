@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const accountModel = require('./account.model');
 
 
-
+// Ledger Schema
 const ledgerSchema = new mongoose.schema({
 
     account: {
@@ -34,6 +34,7 @@ const ledgerSchema = new mongoose.schema({
 })
 
 
+// Middleware to prevent updates or deletions of ledger entries
 function preventLedgerModification() {
     throw new Error('Ledger entries are immutable and cannot be modified or deleted.');
 }
@@ -42,7 +43,11 @@ ledgerSchema.pre('updateOne', preventLedgerModification);
 ledgerSchema.pre('deleteOne', preventLedgerModification);
 ledgerSchema.pre('findOneAndUpdate', preventLedgerModification);
 ledgerSchema.pre('findOneAndDelete', preventLedgerModification);
+ledgerSchema.pre('remove', preventLedgerModification);
+ledgerSchema.pre('deleteMany', preventLedgerModification);
+ledgerSchema.pre('updateMany', preventLedgerModification);
+ledgerSchema.pre('findOneAndReplace', preventLedgerModification);
 
+// Create the Ledger model and export it
 const ledgerModel = mongoose.model('Ledger', ledgerSchema);
-
 module.exports = ledgerModel;
