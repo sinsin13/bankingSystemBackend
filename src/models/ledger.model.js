@@ -3,7 +3,7 @@ const accountModel = require('./account.model');
 
 
 // Ledger Schema
-const ledgerSchema = new mongoose.schema({
+const ledgerSchema = new mongoose.Schema({
 
     account: {
         type: mongoose.Schema.Types.ObjectId,

@@ -52,13 +52,12 @@ async function userLogin(req, res) {
       .json({ message: "User not found", status: "failed" });
   }
 
-  user.comparePassword(password).then((isMatch) => {
-    if (!isMatch) {
-      return res
-        .status(401)
-        .json({ message: "Invalid credentials", status: "failed" });
-    }
-  });
+  const isMatch = await user.comparePassword(password);
+  if (!isMatch) {
+    return res
+      .status(401)
+      .json({ message: "Invalid credentials", status: "failed" });
+  }
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
     expiresIn: "3d",

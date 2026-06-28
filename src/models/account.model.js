@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { captureRejectionSymbol } = require("nodemailer/lib/xoauth2");
 const ledgerModel = require("./ledger.model");
 
 const accountSchema = new mongoose.Schema(
@@ -11,7 +10,7 @@ const accountSchema = new mongoose.Schema(
       index: true,
     },
     status: {
-      enum: ["active", "forzen", "closed"],
+      enum: ["active", "frozen", "closed"],
       type: String,
       default: "active",
     },
