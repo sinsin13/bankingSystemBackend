@@ -11,7 +11,7 @@ app.use(cookieParser()) //middleware to parse cookies from request headers
 // route required
 const authRouter  = require("./routes/auth.routes.js")
 const accountRouter = require("./routes/account.routes.js")
-
+const transactionRoutes = require("./routes/transaction.route.js")
 
 
 
@@ -20,6 +20,7 @@ const accountRouter = require("./routes/account.routes.js")
 
 app.use("/api/auth", authRouter)
 app.use("/api/account", accountRouter)
+app.use("/api/transaction", transactionRoutes)
 
 
 

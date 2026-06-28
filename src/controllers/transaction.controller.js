@@ -20,45 +20,82 @@ const emailService = require("../services/email.service.js");
  */
 
 async function createTransaction(req, res) {
-
-    // Step 1: Validate request
+  // Step 1: Validate request
   const { fromAccount, toAccount, amount, idempotencyKey } = req.body;
 
-
-    // Step 2: check for missing fields
+  // Step 2: check for missing fields
   if (!fromAccount || !toAccount || !amount || !idempotencyKey) {
     return res
       .status(400)
       .json({ message: "Missing required fields", status: "failed" });
   }
-  
+
   // validate idempotency key
-  const isTransactionExists = await transactionModel.findOne({ idempotencyKey });
-  if (isTransactionExists) {{
-    if(isTransactionExists.status === "COMPLETED") {
-      return res.status(200).json({ message: "Transaction already completed", status: "success" });
+  const isTransactionExists = await transactionModel.findOne({idempotencyKey});
+
+  if (isTransactionExists) {
+    {
+      if (isTransactionExists.status === "COMPLETED") {
+        return res
+          .status(200)
+          .json({
+            message: "Transaction already completed",
+            status: "success",
+          });
+      }
+      if (isTransactionExists.status === "PENDING") {
+        return res
+          .status(202)
+          .json({ message: "Transaction is still pending", status: "pending" });
+      }
+      if (isTransactionExists.status === "FAILED") {
+        return res
+          .status(400)
+          .json({ message: "Transaction failed previously", status: "failed" });
+      }
+      if (isTransactionExists.status === "REVERSED") {
+        return res
+          .status(400)
+          .json({
+            message: "Transaction was reversed, please retry",
+            status: "reversed",
+          });
+      }
     }
-    if(isTransactionExists.status === "PENDING") {
-      return res.status(202).json({ message: "Transaction is still pending", status: "pending" });
+
+    // Step 3: Check account status
+    const fromUserAccount = await accountModel.findOne({ _id: fromAccount });
+    const toUserAccount = await accountModel.findOne({ _id: toAccount });
+
+    // Check if both accounts exist
+    if (!fromUserAccount || !toUserAccount) {
+      return res
+        .status(404)
+        .json({ message: "One or both accounts not found", status: "failed" });
     }
-    if(isTransactionExists.status === "FAILED") {
-      return res.status(400).json({ message: "Transaction failed previously", status: "failed" });
+
+    // Check if both accounts are active
+    if (
+      fromUserAccount.status !== "ACTIVE" ||
+      toUserAccount.status !== "ACTIVE"
+    ) {
+      return res
+        .status(400)
+        .json({
+          message: "One or both accounts are not active",
+          status: "failed",
+        });
     }
 
-  }}
 
+    // Step 4: Derive sender balance from ledger
 
-  // Step 3: Check account status
-  const fromUserAccount = await accountModel.findOne({ _id: fromAccount });
-  const toUserAccount = await accountModel.findOne({ _id: toAccount });
+    const balance = await fromUserAccount.getBalance();
+    if (balance < amount) {
+      return res
+        .status(400)
+        .json({ message: "Insufficient funds", status: "failed" });
+    }
 
-
-  // Check if both accounts exist
-  if (!fromUserAccount || !toUserAccount) {
-    return res
-      .status(404)
-      .json({ message: "One or both accounts not found", status: "failed" });
   }
-
-
 }
